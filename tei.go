@@ -34,6 +34,7 @@ package teainsights
 // already a UUID, and reusing it turns artifact lookup into a primary-key hit.
 
 import (
+	"encoding/base64"
 	"net/url"
 	"strings"
 	"time"
@@ -116,6 +117,50 @@ func PURLTEI(purl string) string {
 	return "urn:tei:purl:" + Domain + ":" + purl
 }
 
+// UUIDTEIURI renders the TEA 1.0.0 `tei://<domain>/uuid/<id>` form.
+func UUIDTEIURI(id string) string {
+	return "tei://" + Domain + "/uuid/" + id
+}
+
+// PURLTEIURI renders the TEA 1.0.0 `tei://<domain>/purl/<id>` form, where the
+// id is the Package URL base64url encoded without padding.
+func PURLTEIURI(purl string) string {
+	return "tei://" + Domain + "/purl/" + base64.RawURLEncoding.EncodeToString([]byte(purl))
+}
+
+// ToURIForm converts a `urn:tei:` identifier to the 1.0.0 `tei://` form. An
+// input already in URI form is returned unchanged, and so is one that does not
+// parse.
+func ToURIForm(raw string) string {
+	t, ok := ParseTEI(raw)
+	if !ok {
+		return raw
+	}
+	if strings.HasPrefix(strings.ToLower(strings.TrimSpace(raw)), "tei://") {
+		return strings.TrimSpace(raw)
+	}
+	id := t.ID
+	if t.Type == "purl" {
+		id = base64.RawURLEncoding.EncodeToString([]byte(id))
+	} else {
+		id = url.PathEscape(id)
+	}
+	return "tei://" + t.Domain + "/" + t.Type + "/" + id
+}
+
+// ToURNForm converts a `tei://` identifier to the 0.x `urn:tei:` form, the form
+// the index stores. A `urn:tei:` input is returned unchanged.
+func ToURNForm(raw string) string {
+	t, ok := ParseTEI(raw)
+	if !ok {
+		return raw
+	}
+	if strings.HasPrefix(strings.ToLower(strings.TrimSpace(raw)), "urn") {
+		return strings.TrimSpace(raw)
+	}
+	return "urn:tei:" + t.Type + ":" + t.Domain + ":" + t.ID
+}
+
 // TEI is a decomposed Transparency Exchange Identifier.
 type TEI struct {
 	Type   string // uuid | purl | hash | swid | …
@@ -123,7 +168,10 @@ type TEI struct {
 	ID     string
 }
 
-// ParseTEI decomposes `urn:tei:<type>:<domain>:<unique-identifier>`.
+// ParseTEI decomposes `urn:tei:<type>:<domain>:<unique-identifier>` (TEA 0.x)
+// and `tei://<domain>/<type>/<unique-identifier>` (TEA 1.0.0). For the URI form
+// the identifier is percent-decoded, and a purl identifier is base64url decoded
+// (padding tolerated), so TEI.ID always carries the Package URL itself.
 //
 // The unique-identifier may itself contain colons — a PURL always does — so the
 // split is bounded to four parts and the remainder is taken verbatim. Callers
@@ -142,6 +190,9 @@ func ParseTEI(raw string) (TEI, bool) {
 			s = dec
 		}
 	}
+	if len(s) > 6 && strings.EqualFold(s[:6], "tei://") {
+		return parseTEIURI(s[6:])
+	}
 	parts := strings.SplitN(s, ":", 4)
 	if len(parts) != 4 {
 		return TEI{}, false
@@ -159,6 +210,28 @@ func ParseTEI(raw string) (TEI, bool) {
 		return TEI{}, false
 	}
 	return TEI{Type: t, Domain: strings.ToLower(domain), ID: id}, true
+}
+
+// parseTEIURI parses what follows the `tei://` scheme: `<domain>/<type>/<id>`,
+// where the id is a single path segment.
+func parseTEIURI(rest string) (TEI, bool) {
+	parts := strings.Split(rest, "/")
+	if len(parts) != 3 || parts[0] == "" || parts[1] == "" || parts[2] == "" {
+		return TEI{}, false
+	}
+	id, err := url.PathUnescape(parts[2])
+	if err != nil || id == "" {
+		return TEI{}, false
+	}
+	t := strings.ToLower(parts[1])
+	if t == "purl" {
+		raw, err := base64.RawURLEncoding.DecodeString(strings.TrimRight(id, "="))
+		if err != nil || len(raw) == 0 {
+			return TEI{}, false
+		}
+		id = string(raw)
+	}
+	return TEI{Type: t, Domain: strings.ToLower(parts[0]), ID: id}, true
 }
 
 // IsLocalDomain reports whether a TEI's domain part names this server's

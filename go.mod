@@ -6,7 +6,7 @@ require (
 	github.com/google/cel-go v0.30.0
 	github.com/google/uuid v1.6.0
 	github.com/jackc/pgx/v5 v5.9.2
-	golang.org/x/sync v0.22.0
+	golang.org/x/sync v0.21.0
 )
 
 require (

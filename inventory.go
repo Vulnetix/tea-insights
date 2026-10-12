@@ -392,6 +392,16 @@ func LoadInventory(ctx context.Context, q Querier, seeds Seeds) (*Inventory, err
 // caches it. The build runs on its own context, bounded by teaInsightsBuildLimit.
 func teaBuildSharedChan(q Querier, seeds Seeds, saasOrgID string) <-chan singleflight.Result {
 	return teaInsightsFlight.DoChan("insights:"+saasOrgID, func() (any, error) {
+		// Re-check under the flight. A caller that missed the cache can reach
+		// DoChan just after the previous flight finished and filled it; without
+		// this it would start a second full build of an inventory that is
+		// already fresh. A stale entry still rebuilds, which is the point of a
+		// background refresh.
+		if v, ok := teaInsightsCache.Get(saasOrgID); ok {
+			if inv := v.(*Inventory); time.Since(inv.BuiltAt) < teaInsightsTTL {
+				return inv, nil
+			}
+		}
 		bctx, cancel := context.WithTimeout(context.Background(), teaInsightsBuildLimit)
 		defer cancel()
 		inv, err := BuildFunc(bctx, q, seeds)

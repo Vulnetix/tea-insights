@@ -9,9 +9,9 @@ jobs:
   test:
     runs-on: [self-hosted, Linux, X64, vulnetix-local]
     steps:
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@v5.1.0
 
-      - uses: actions/setup-go@v6
+      - uses: actions/setup-go@v6.5.0
         with:
           go-version-file: go.mod
 

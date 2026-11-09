@@ -21,7 +21,7 @@ jobs:
     timeout-minutes: 60
     steps:
       - uses: actions/checkout@v7.0.1
-      - uses: Vulnetix/cli/secrets@v4.24.3
+      - uses: Vulnetix/cli/secrets@v4.24.6
         with:
           org-id: ${{ secrets.VULNETIX_ORG_ID }}
           api-key: ${{ secrets.VULNETIX_API_KEY }}
@@ -48,7 +48,7 @@ jobs:
     timeout-minutes: 60
     steps:
       - uses: actions/checkout@v7.0.1
-      - uses: Vulnetix/cli/sast/go@v4.24.3
+      - uses: Vulnetix/cli/sast/go@v4.24.6
         with:
           org-id: ${{ secrets.VULNETIX_ORG_ID }}
           api-key: ${{ secrets.VULNETIX_API_KEY }}
@@ -63,7 +63,7 @@ jobs:
             Vulnetix/opa-aquasecurity-trivy
             Vulnetix/opa-gosec
           github-code-scanning: ${{ github.event_name == 'push' }}
-      - uses: Vulnetix/cli/sast@v4.24.3
+      - uses: Vulnetix/cli/sast@v4.24.6
         if: ${{ !cancelled() }}
         with:
           org-id: ${{ secrets.VULNETIX_ORG_ID }}
@@ -89,14 +89,14 @@ jobs:
     timeout-minutes: 60
     steps:
       - uses: actions/checkout@v7.0.1
-      - uses: Vulnetix/cli/sca/go@v4.24.3
+      - uses: Vulnetix/cli/sca/go@v4.24.6
         with:
           org-id: ${{ secrets.VULNETIX_ORG_ID }}
           api-key: ${{ secrets.VULNETIX_API_KEY }}
           artifact-name: sca-go
           fail-on-findings: false
           github-code-scanning: ${{ github.event_name == 'push' }}
-      - uses: Vulnetix/cli/sca@v4.24.3
+      - uses: Vulnetix/cli/sca@v4.24.6
         if: ${{ !cancelled() }}
         with:
           org-id: ${{ secrets.VULNETIX_ORG_ID }}
@@ -115,7 +115,7 @@ jobs:
     timeout-minutes: 60
     steps:
       - uses: actions/checkout@v7.0.1
-      - uses: Vulnetix/cli/license@v4.24.3
+      - uses: Vulnetix/cli/license@v4.24.6
         with:
           org-id: ${{ secrets.VULNETIX_ORG_ID }}
           api-key: ${{ secrets.VULNETIX_API_KEY }}
@@ -129,7 +129,7 @@ jobs:
     timeout-minutes: 60
     steps:
       - uses: actions/checkout@v7.0.1
-      - uses: Vulnetix/cli/cbom@v4.24.3
+      - uses: Vulnetix/cli/cbom@v4.24.6
         with:
           org-id: ${{ secrets.VULNETIX_ORG_ID }}
           api-key: ${{ secrets.VULNETIX_API_KEY }}
@@ -142,7 +142,7 @@ jobs:
     timeout-minutes: 60
     steps:
       - uses: actions/checkout@v7.0.1
-      - uses: Vulnetix/cli/aibom@v4.24.3
+      - uses: Vulnetix/cli/aibom@v4.24.6
         with:
           org-id: ${{ secrets.VULNETIX_ORG_ID }}
           api-key: ${{ secrets.VULNETIX_API_KEY }}
@@ -164,7 +164,7 @@ jobs:
       - uses: actions/checkout@v7.0.1
         with:
           fetch-depth: 0
-      - uses: Vulnetix/cli/analyze@v4.24.3
+      - uses: Vulnetix/cli/analyze@v4.24.6
         with:
           org-id: ${{ secrets.VULNETIX_ORG_ID }}
           api-key: ${{ secrets.VULNETIX_API_KEY }}
@@ -181,7 +181,7 @@ jobs:
     timeout-minutes: 60
     steps:
       - uses: actions/checkout@v7.0.1
-      - uses: Vulnetix/cli/sbom@v4.24.3
+      - uses: Vulnetix/cli/sbom@v4.24.6
         with:
           org-id: ${{ secrets.VULNETIX_ORG_ID }}
           api-key: ${{ secrets.VULNETIX_API_KEY }}
@@ -201,7 +201,7 @@ jobs:
     timeout-minutes: 60
     steps:
       - uses: actions/checkout@v7.0.1
-      - uses: Vulnetix/cli/gha-upload@v4.24.3
+      - uses: Vulnetix/cli/gha-upload@v4.24.6
         with:
           org-id: ${{ secrets.VULNETIX_ORG_ID }}
           api-key: ${{ secrets.VULNETIX_API_KEY }}
@@ -226,7 +226,7 @@ jobs:
           pattern: "{sca,cbom,aibom}"
           merge-multiple: true
           path: boms
-      - uses: Vulnetix/cli/tea-release@v4.24.3
+      - uses: Vulnetix/cli/tea-release@v4.24.6
         with:
           org-id: ${{ secrets.VULNETIX_ORG_ID }}
           api-key: ${{ secrets.VULNETIX_API_KEY }}
